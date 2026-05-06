@@ -170,25 +170,28 @@ export default function StockTable() {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input type="text" className="input-field pl-9" placeholder="Search articles..."
-              value={search} onChange={e => setSearch(e.target.value)} />
-            {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><X size={14} /></button>}
+        {/* Table card — search bar + table together, self-contained scroll */}
+        <div className="card p-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 200px)', minHeight: '400px' }}>
+          {/* Search filters pinned at top of card — no page-level sticky needed */}
+          <div className="flex-shrink-0 px-4 py-3 bg-white border-b border-slate-200 rounded-t-xl">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input type="text" className="input-field pl-9 w-full" placeholder="Search articles..."
+                  value={search} onChange={e => setSearch(e.target.value)} />
+                {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"><X size={14} /></button>}
+              </div>
+              <select className="input-field w-full sm:w-40 flex-shrink-0" value={filterGender} onChange={e => setFilterGender(e.target.value)}>
+                <option value="">All Genders</option>
+                {GENDERS.filter(Boolean).map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
           </div>
-          <select className="input-field w-auto min-w-36" value={filterGender} onChange={e => setFilterGender(e.target.value)}>
-            <option value="">All Genders</option>
-            {GENDERS.filter(Boolean).map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
 
-        {/* Table */}
-        <div className="card p-0 overflow-hidden">
-          <div className="table-container">
+          {/* Table scrolls both directions within this bounded box */}
+          <div className="flex-1 overflow-auto min-h-0">
             <table className="w-full text-sm">
-              <thead className="sticky-header bg-slate-50 border-b border-slate-200">
+              <thead className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-10">#</th>
                   <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-16">Image</th>
@@ -199,7 +202,7 @@ export default function StockTable() {
                       <span className="flex items-center gap-1">{c.label}{c.sortable && <SortIcon col={c.key} />}</span>
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide sticky right-0 bg-slate-50 shadow-[-4px_0_8px_rgba(0,0,0,0.04)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -244,16 +247,16 @@ export default function StockTable() {
                         <td className="px-3 py-3"><span className={`badge ${s.currentCartons > 5 ? 'bg-emerald-100 text-emerald-700' : s.currentCartons > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{s.currentCartons}</span></td>
                         <td className="px-3 py-2"><input type="number" className="input-field text-xs py-1.5 w-20" value={editForm.mrp} onChange={e => setEditForm(p => ({ ...p, mrp: e.target.value }))} /></td>
                         <td className="px-3 py-2"><input type="number" className="input-field text-xs py-1.5 w-20" value={editForm.rate} onChange={e => setEditForm(p => ({ ...p, rate: e.target.value }))} /></td>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-3 sticky right-0 bg-white shadow-[-4px_0_8px_rgba(0,0,0,0.04)]">
                           <div className="flex gap-1">
-                            <button onClick={() => saveEdit(s._id)} className="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200"><Save size={14} /></button>
-                            <button onClick={() => setEditingId(null)} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200"><X size={14} /></button>
+                            <button onClick={() => saveEdit(s._id)} className="p-2 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200"><Save size={14} /></button>
+                            <button onClick={() => setEditingId(null)} className="p-2 bg-slate-100 text-slate-500 rounded-lg hover:bg-slate-200"><X size={14} /></button>
                           </div>
                         </td>
                       </>
                     ) : (
                       <>
-                        <td className="px-3 py-3 font-semibold text-slate-800 whitespace-nowrap">{s.articleName}</td>
+                        <td className="px-3 py-3 font-semibold text-slate-800 whitespace-nowrap max-w-[160px] truncate">{s.articleName}</td>
                         <td className="px-3 py-3 text-slate-600">{s.stockType}</td>
                         <td className="px-3 py-3">
                           <span className={`badge ${s.gender === 'Men' ? 'bg-blue-100 text-blue-700' : s.gender === 'Women' ? 'bg-pink-100 text-pink-700' : s.gender === 'Kids' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}`}>
@@ -272,12 +275,12 @@ export default function StockTable() {
                         </td>
                         <td className="px-3 py-3 font-medium text-slate-800">₹{s.mrp?.toLocaleString('en-IN')}</td>
                         <td className="px-3 py-3 font-medium text-slate-800">₹{s.rate?.toLocaleString('en-IN')}</td>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-3 sticky right-0 bg-white shadow-[-4px_0_8px_rgba(0,0,0,0.04)]">
                           <div className="flex gap-1">
-                            <button onClick={() => startEdit(s)} className="p-1.5 bg-brand-50 text-brand-600 rounded-lg hover:bg-brand-100" title="Edit">
+                            <button onClick={() => startEdit(s)} className="p-2 bg-brand-50 text-brand-600 rounded-lg hover:bg-brand-100 touch-manipulation" title="Edit">
                               <Edit2 size={14} />
                             </button>
-                            <button onClick={() => setDeleteId(s._id)} className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100" title="Delete">
+                            <button onClick={() => setDeleteId(s._id)} className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 touch-manipulation" title="Delete">
                               <Trash2 size={14} />
                             </button>
                           </div>
@@ -290,7 +293,7 @@ export default function StockTable() {
             </table>
           </div>
           {stocks.length > 0 && (
-            <div className="px-4 py-3 border-t border-slate-100 text-xs text-slate-500">
+            <div className="flex-shrink-0 px-4 py-3 border-t border-slate-100 text-xs text-slate-500 bg-white rounded-b-xl">
               Showing {stocks.length} of {total} records
             </div>
           )}
